@@ -1,2 +1,2 @@
-# pokedex-v2
+# Pokédex-v2
 New Version of Pokédex
