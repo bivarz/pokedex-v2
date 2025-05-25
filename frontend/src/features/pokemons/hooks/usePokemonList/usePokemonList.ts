@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { getPokemons } from "../../api/pokeapi/services";
-import { PokemonListResponse } from "../../api/pokeapi/services.types";
 import {
   Pokemon,
   UsePokemonListProps,
@@ -11,49 +11,29 @@ export const usePokemonList = ({
   initialLimit = 20,
   initialOffset = 0,
 }: UsePokemonListProps = {}): UsePokemonListResult => {
-  const [pokemons, setPokemons] = useState<Pokemon[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<Error | null>(null);
-  const [totalCount, setTotalCount] = useState<number>(0);
+  const [limit, setLimitState] = useState<number>(initialLimit);
   const [offset, setOffset] = useState<number>(initialOffset);
-  const [limit, setLimit] = useState<number>(initialLimit);
-  const [hasNext, setHasNext] = useState<boolean>(false);
-  const [hasPrevious, setHasPrevious] = useState<boolean>(false);
 
-  const currentPage = Math.floor(offset / limit) + 1;
-
-  const fetchPokemons = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response: PokemonListResponse = await getPokemons({
-        offset,
-        limit,
-      });
-
-      const pokemonsWithIds = response.results.map((pokemon) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["pokemons", offset, limit],
+    queryFn: () => getPokemons({ offset, limit }),
+    select: (response) => ({
+      pokemons: response.results.map((pokemon) => {
         const urlParts = pokemon.url.split("/");
         const id = parseInt(urlParts[urlParts.length - 2]);
-        return { ...pokemon, id };
-      });
+        return { ...pokemon, id } as Pokemon;
+      }),
+      hasNext: !!response.next,
+      hasPrevious: !!response.previous,
+      totalCount: response.count,
+    }),
+  });
 
-      setPokemons(pokemonsWithIds);
-      setTotalCount(response.count);
-      setHasNext(!!response.next);
-      setHasPrevious(!!response.previous);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err : new Error("Failed to fetch pokemons")
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [offset, limit]);
-
-  useEffect(() => {
-    fetchPokemons();
-  }, [fetchPokemons]);
+  const currentPage = Math.floor(offset / limit) + 1;
+  const totalCount = data?.totalCount || 0;
+  const pokemons = data?.pokemons || [];
+  const hasNext = data?.hasNext || false;
+  const hasPrevious = data?.hasPrevious || false;
 
   const goToNextPage = useCallback(() => {
     if (hasNext) {
@@ -67,8 +47,13 @@ export const usePokemonList = ({
     }
   }, [hasPrevious, limit]);
 
+  const setLimit = useCallback((newLimit: number) => {
+    setLimitState(newLimit);
+    setOffset(0);
+  }, []);
+
   return {
-    error,
+    error: error as Error | null,
     limit,
     offset,
     hasNext,
