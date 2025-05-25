@@ -1,4 +1,4 @@
-import { api } from "../axios";
+import { api } from "../apiConfig";
 import { getPokemonsProps, PokemonListResponse } from "./services.types";
 
 export const getPokemons = async ({

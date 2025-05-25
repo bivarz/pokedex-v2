@@ -1,7 +1,7 @@
-import { api } from "../axios";
+import { api } from "../apiConfig";
 import { getPokemons } from "./services";
 
-jest.mock("../axios", () => ({
+jest.mock("../apiConfig", () => ({
   api: {
     get: jest.fn(),
   },

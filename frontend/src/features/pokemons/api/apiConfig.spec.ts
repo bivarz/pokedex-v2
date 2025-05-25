@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 import axios from "axios";
-import { api } from "./axios";
+import { api } from "./apiConfig";
 
 jest.mock("axios", () => {
   return {
@@ -22,7 +22,7 @@ describe("Axios API client", () => {
 
   it("should create axios instance with correct baseURL", () => {
     jest.isolateModules(() => {
-      require("./axios");
+      require("./apiConfig");
     });
 
     expect(axios.create).toHaveBeenCalledWith({
