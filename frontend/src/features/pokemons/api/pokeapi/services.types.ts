@@ -3,6 +3,7 @@ import { Pokemon } from "../../hooks/usePokemonList/usePokemonList.types";
 export interface getPokemonsProps {
   offset: number;
   limit: number;
+  name?: string;
 }
 
 export interface PokemonListResponse {

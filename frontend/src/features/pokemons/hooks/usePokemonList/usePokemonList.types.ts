@@ -1,8 +1,8 @@
 export interface UsePokemonListProps {
   initialLimit?: number;
   initialOffset?: number;
+  searchQuery?: string;
 }
-
 export interface Pokemon {
   name: string;
   url: string;
