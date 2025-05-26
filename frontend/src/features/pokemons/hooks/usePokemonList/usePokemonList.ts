@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getPokemons } from "../../api/pokeapi/services";
 import {
@@ -10,13 +10,18 @@ import {
 export const usePokemonList = ({
   initialLimit = 20,
   initialOffset = 0,
+  searchQuery = "",
 }: UsePokemonListProps = {}): UsePokemonListResult => {
   const [limit, setLimitState] = useState<number>(initialLimit);
   const [offset, setOffset] = useState<number>(initialOffset);
 
+  useEffect(() => {
+    setOffset(0);
+  }, [searchQuery]);
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ["pokemons", offset, limit],
-    queryFn: () => getPokemons({ offset, limit }),
+    queryKey: ["pokemons", offset, limit, searchQuery],
+    queryFn: () => getPokemons({ offset, limit, name: searchQuery }),
     select: (response) => ({
       pokemons: response.results.map((pokemon) => {
         const urlParts = pokemon.url.split("/");
